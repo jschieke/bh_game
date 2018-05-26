@@ -13,10 +13,11 @@ public class PlayerController : MonoBehaviour
     public float groundCheckRadius;
     public LayerMask groundLayer;
     private bool isGrounded;
-
+    //landing recovery
     private int jumpCount;
-    public float groundTime = 0.0f;
+    public float groundTime;
     float timer;
+    
 
     //double jump from fallstate
     
@@ -37,6 +38,7 @@ public class PlayerController : MonoBehaviour
         
         GUI.Label(new Rect(10, 10, 200, 90),"AIR ACTIONS: "+air);
         GUI.Label(new Rect(10, 25, 100, 45), "IS GROUNDED: " + ground);
+        GUI.Label(new Rect(10, 130, 100, 45), "moving " + _anim.GetFloat("Speed"));
         GUI.Label(new Rect(190, 10, 100, 45), "SPEED: " + sped);
     }
     // Update is called once per frame
@@ -52,14 +54,21 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            speed = 5;
+            speed = 7;
         }
         
         
         float l_r = Input.GetAxisRaw("Horizontal");
+        //_anim floats for animator parameters
         _anim.SetFloat("Speed", Mathf.Abs(l_r));
         _myRigidbody.velocity = new Vector2(l_r * speed, _myRigidbody.velocity.y);
         
+        
+        
+       
+        
+        
+            
 
         //sprite flip logic
         if (_facingRight  ==true && l_r < 0){
@@ -76,12 +85,14 @@ public class PlayerController : MonoBehaviour
         isGrounded = Physics2D.OverlapCircle(groundCheckPoint.position, groundCheckRadius, groundLayer);
         // isGrounded will update slightly behind the jump count, so that grounded jumps still add to
         // the jump count variable( happened at the same time before
+        groundTime = 1f;
         if (isGrounded == true)
         {
-            timer += (Time.deltaTime)*3;
+
+            timer += Time.deltaTime*1.95f; //landing recovery, higher equals less time?
             if (timer > groundTime)
             {
-                timer = 0f;
+                timer = 0.1f;
                 jumpCount = 2;
             }
 
@@ -90,13 +101,19 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.W) && jumpCount>0)
         {
             isGrounded = false;
-            _anim.SetBool("Jump", true);
+            //_anim.SetBool("Jump", true);
             //15 = current jump height
             _myRigidbody.velocity = new Vector2(_myRigidbody.velocity.x, 17);
             jumpCount--;
 
         }
-        
+        if (Input.GetKeyDown(KeyCode.S) && isGrounded == false)
+        {
+            _myRigidbody.velocity = new Vector2(_myRigidbody.velocity.x, -17);
+        }
+
+
+
 
     }
 }
